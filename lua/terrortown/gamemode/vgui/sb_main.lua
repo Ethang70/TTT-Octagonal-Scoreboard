@@ -20,12 +20,10 @@ surface.CreateFont("cool_large", {font = "Octin Sports RG",
                                   weight = 400})
 surface.CreateFont("treb_small", {font = "Octin Sports RG",
                                   size = 14,
-                                  weight = 700})
+                                  weight = 555})
 
 CreateClientConVar("ttt_scoreboard_sorting", "name", true, false, "name | role | karma | score | deaths | ping")
 CreateClientConVar("ttt_scoreboard_ascending", "1", true, false, "Should scoreboard ordering be in ascending order")
-
-local logo = surface.GetTextureID("vgui/ttt/score_logo")
 
 local PANEL = {}
 
@@ -268,24 +266,22 @@ function PANEL:StartUpdateTimer()
 end
 
 local colors = {
+   bgacc = Color(2,2,2,235),
    bg = Color(30,30,30, 235),
+   baracc = Color(117,95,0,255),
    bar = Color(220,180,0,255)
 };
 
 local y_logo_off = 72
 
 function PANEL:Paint()
-   -- Logo sticks out, so always offset bg
-   draw.RoundedBox( 8, 0, y_logo_off, self:GetWide(), self:GetTall() - y_logo_off, colors.bg)
+   -- Background of scoreboard
+   draw.RoundedBox( 0, 0, y_logo_off, 10, self:GetTall() - y_logo_off - 30, colors.bgacc)
+   draw.RoundedBox( 0, 10, y_logo_off, self:GetWide() - 10, self:GetTall() - y_logo_off - 30, colors.bg)
 
    -- Server name is outlined by orange/gold area
-   draw.RoundedBox( 8, 0, y_logo_off + 25, self:GetWide(), 32, colors.bar)
-
-   -- TTT Logo
-   surface.SetTexture( logo )
-   surface.SetDrawColor( 255, 255, 255, 255 )
-   surface.DrawTexturedRect( 5, 0, 256, 256 )
-
+   draw.RoundedBox( 0, 0, y_logo_off, 10, 32, colors.baracc)
+   draw.RoundedBox( 0, 10, y_logo_off, self:GetWide()- 10, 32, colors.bar)
 end
 
 function PANEL:PerformLayout()
@@ -297,8 +293,8 @@ function PANEL:PerformLayout()
       if IsValid(group) then
          if group:HasRows() then
             group:SetVisible(true)
-            group:SetPos(0, gy)
-            group:SetSize(self.ply_frame:GetWide(), group:GetTall())
+            group:SetPos(10, gy)
+            group:SetSize(self.ply_frame:GetWide() - 10, group:GetTall())
             group:InvalidateLayout()
             gy = gy + group:GetTall() + 5
          else
@@ -323,16 +319,16 @@ function PANEL:PerformLayout()
    self:SetSize(w, h)
    self:SetPos( (ScrW() - w) / 2, math.min(72, (ScrH() - h) / 4))
 
-   self.ply_frame:SetPos(8, y_logo_off + 109)
+   self.ply_frame:SetPos(8, y_logo_off + 74)
    self.ply_frame:SetSize(self:GetWide() - 16, self:GetTall() - 109 - y_logo_off - 5)
 
-   -- server stuff
+   -- welcome to
    self.hostdesc:SizeToContents()
-   self.hostdesc:SetPos(w - self.hostdesc:GetWide() - 8, y_logo_off + 5)
-
+   self.hostdesc:SetPos(w - self.hostdesc:GetWide() - self.hostname:GetWide(), y_logo_off + 5)
+   -- server name
    local hw = w - 180 - 8
    self.hostname:SetSize(hw, 32)
-   self.hostname:SetPos(w - self.hostname:GetWide() - 8, y_logo_off + 27)
+   self.hostname:SetPos(w - self.hostname:GetWide() - 8, y_logo_off)
 
    surface.SetFont("cool_large")
    local hname = self.hostname:GetValue()
@@ -343,22 +339,23 @@ function PANEL:PerformLayout()
    end
 
    self.hostname:SetText(hname)
-
+   -- Time to map change
    self.mapchange:SizeToContents()
-   self.mapchange:SetPos(w - self.mapchange:GetWide() - 8, y_logo_off + 60)
+   self.mapchange:SetPos(w - self.mapchange:GetWide()- 8, y_logo_off + 35)
 
-   -- score columns
-   local cy = y_logo_off + 90
+   -- TITLES score columns
+   local cy = y_logo_off + 55
    local cx = w - 8 -(scrolling and 16 or 0)
    for k,v in ipairs(self.cols) do
       v:SizeToContents()
       cx = cx - v.Width
-      v:SetPos(cx - v:GetWide()/2, cy)
+      v:SetPos(cx - v:GetWide()/2 , cy)
    end
 
    -- sort headers
    -- reuse cy
    -- cx = logo width + buffer space
+   -- Sort BY Name/role
    local cx = 256 + 8
    for k,v in ipairs(self.sort_headers) do
       v:SizeToContents()
@@ -372,7 +369,7 @@ function PANEL:ApplySchemeSettings()
    self.hostname:SetFont("cool_large")
    self.mapchange:SetFont("treb_small")
 
-   self.hostdesc:SetTextColor(COLOR_WHITE)
+   self.hostdesc:SetTextColor(COLOR_BLACK)
    self.hostname:SetTextColor(COLOR_BLACK)
    self.mapchange:SetTextColor(COLOR_WHITE)
 
